@@ -24,12 +24,27 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
+public sealed class StreamDeckGifPopupForm : Form
+{
+    // WS_EX_TOOLWINDOW prevents this short-lived notification from showing
+    // in Alt+Tab or as a separate taskbar application.
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            CreateParams parameters = base.CreateParams;
+            parameters.ExStyle |= 0x00000080;
+            return parameters;
+        }
+    }
+}
+
 public static class StreamDeckGifPopup
 {
     public static void Show(string gifPath, int width, int height, int durationMilliseconds, int fadeMilliseconds)
     {
         Image image = Image.FromFile(gifPath);
-        Form form = new Form();
+        Form form = new StreamDeckGifPopupForm();
         form.FormBorderStyle = FormBorderStyle.None;
         form.StartPosition = FormStartPosition.Manual;
         form.Size = new Size(width, height);
