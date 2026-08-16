@@ -5,6 +5,25 @@
 # happened without watching a console window.
 
 $logPath = Join-Path $PSScriptRoot "update-install-log.txt"
+$gifPopupScript = Join-Path $PSScriptRoot "Show-GifPopup.ps1"
+
+function Get-GifPath {
+    param([string]$Name)
+    $deployedPath = Join-Path $PSScriptRoot "gif\$Name"
+    if (Test-Path -LiteralPath $deployedPath) { return $deployedPath }
+    return Join-Path (Split-Path $PSScriptRoot -Parent) "gif\$Name"
+}
+
+$completeGif = Get-GifPath "clapping.gif"
+
+function Show-GifPopup {
+    param([string]$GifPath)
+    if ((Test-Path -LiteralPath $gifPopupScript) -and (Test-Path -LiteralPath $GifPath)) {
+        Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
+            "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", "`"$gifPopupScript`"", "-GifPath", "`"$GifPath`""
+        )
+    }
+}
 
 function Ensure-Module {
     param([string]$Name)
@@ -36,6 +55,7 @@ try {
     $summary = "$timestamp - Install run complete.`n$($result | Out-String)"
 
     $rebootNeeded = Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"
+    Show-GifPopup $completeGif
     if ($rebootNeeded) {
         Show-Toast "Windows Update installed" "Done. A restart is needed to finish installing."
     } else {

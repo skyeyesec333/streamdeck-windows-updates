@@ -5,6 +5,25 @@
 # happened.
 
 $logPath = Join-Path $PSScriptRoot "update-check-log.txt"
+$gifPopupScript = Join-Path $PSScriptRoot "Show-GifPopup.ps1"
+
+function Get-GifPath {
+    param([string]$Name)
+    $deployedPath = Join-Path $PSScriptRoot "gif\$Name"
+    if (Test-Path -LiteralPath $deployedPath) { return $deployedPath }
+    return Join-Path (Split-Path $PSScriptRoot -Parent) "gif\$Name"
+}
+
+$checkingGif = Get-GifPath "space-force-microsoft.gif"
+
+function Show-GifPopup {
+    param([string]$GifPath)
+    if ((Test-Path -LiteralPath $gifPopupScript) -and (Test-Path -LiteralPath $GifPath)) {
+        Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
+            "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", "`"$gifPopupScript`"", "-GifPath", "`"$GifPath`""
+        )
+    }
+}
 
 function Ensure-Module {
     param([string]$Name)
@@ -28,7 +47,7 @@ function Show-Toast {
 Ensure-Module "PSWindowsUpdate"
 Ensure-Module "BurntToast"
 
-Show-Toast "Windows Update" "Checking for updates..."
+Show-GifPopup $checkingGif
 
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $updates = Get-WindowsUpdate -ErrorAction SilentlyContinue
